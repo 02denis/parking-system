@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+
+    <style>
+        .qr-code {
+            max-width: 200px;
+            margin: 10px;
+        }
+    </style>
+
+    <title>Vehicles QR Code</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Vehicles QR Code </h1>
+        <div class="text-center">
+            <button type="button" class="btn btn-primary" id="generate">Generate QR Codes</button>
+        </div>
+
+        <br>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Vehicle Plate number</th>
+                    <th>QR Code</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="vehicleTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <script>
+        function htmlEncode(value) {
+            return $('<div/>').text(value).html();
+        }
+
+        $(function() {
+            $('#generate').click(function() {
+                fetch('/vehicles') 
+                    .then(response => response.json())
+                    .then(vehiclesData => {
+                        $('#vehicleTableBody').empty();
+
+                        vehiclesData.forEach(function(vehicle) {
+                            
+
+                            let statusText = (vehicle.toPay != 0) ? 'YOU HAVE TO PAY' : 'You have nothing to pay';
+                            let statusCell = $('<td>').text(statusText);
+
+                            let qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + htmlEncode(statusText);
+                            let qrCodeImg = $('<img>').attr('src', qrCodeUrl).addClass('qr-code img-thumbnail img-responsive');
+                            let qrCodeDiv = $('<div>').addClass('text-center').append(qrCodeImg);
+                            let vehicleIdCell = $('<td>').text(vehicle.plateNumber);
+                            let qrCodeCell = $('<td>').append(qrCodeDiv);
+
+                            let tableRow = $('<tr>').append(vehicleIdCell).append(qrCodeCell).append(statusCell);
+
+                            $('#vehicleTableBody').append(tableRow);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching vehicles:', error));
+            });
+        });
+    </script>
+</body>
+
+</html>

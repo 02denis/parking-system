@@ -1,0 +1,10 @@
+{
+  
+  "plateNumber": "ABC123",
+  "timeIn": null,
+  "timeOut": null,
+  "payment": 0.0,
+    "toPay": 0.0,
+    "paid": false
+  }
+

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; 
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.5); 
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1; 
+            display: none;
+        }
+
+        .plate-number {
+            font-size: 2em;
+            color: red;
+        }
+
+        .qr-code {
+            max-width: 200px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <video id="bgVideo" class="bg" autoplay muted></video>
+
+    <div class="container" id="qrContainer">
+        <h1>Exit QR Code</h1>
+        <div id="plateNumber" class="plate-number"></div>
+        <div id="paymentMessage"></div>
+        <img id="qrCode" class="qr-code" src="" alt="QR Code">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var socket = io();
+
+            socket.on('exit_plate', function(data) {
+                const plateNumberDiv = document.getElementById('plateNumber');
+                const paymentMessageDiv = document.getElementById('paymentMessage');
+                const qrCodeImg = document.getElementById('qrCode');
+                const qrContainer = document.getElementById('qrContainer');
+
+                plateNumberDiv.textContent = data.plateNumber;
+                qrCodeImg.src = data.qrCodeUrl;
+                qrContainer.style.display = 'block'; 
+
+                if (data.toPay > 0 && !data.paid) {
+                    paymentMessageDiv.textContent = `Trebuie să plătești ${data.toPay} ron`;
+                } else {
+                    paymentMessageDiv.textContent = 'Nu ai nimic de plătit';
+                }
+            });
+
+            const video = document.getElementById('bgVideo');
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                }).catch(function(err) {
+                    console.error("Error accessing the camera: ", err);
+                });
+            } else {
+                console.error("getUserMedia not supported on your browser!");
+            }
+        });
+    </script>
+</body>
+</html>
